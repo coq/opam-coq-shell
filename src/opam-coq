@@ -1,4 +1,148 @@
 #!/bin/sh
 
-echo $@
-export | grep OPAM
+# This file is both a script one can use to install opam and then coq
+# and an opam simplified shell part of the coq:shell package
+
+#set -x
+#set -e
+
+CONF=~/.opam-coq-shell.config
+OPAM_INSTALLER_URL=https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh
+OPAM_INSTALLER=opam_installer.sh
+OCAML=4.01.0
+
+####
+setup() {
+
+profile=$1
+shift
+
+case $profile in
+	8.5)
+		# current 8.5 version, to be flipped on a release
+		# (ciryl has an idea on how to avoid hardcoding it)
+		V=8.5beta1
+
+		# a fresh environment with a ocaml version that we know works
+		opam switch coq-8.5 --alias-of 4.01.0
+		eval `opam config env`
+
+		# install ourselves in the switch
+		opam install -y opam-coq-shell
+
+		# only what is tested is visible
+		opam repo add coq-8.5 https://github.com/coq/repo-8.5.git
+
+		# we install and write the coq version in stone
+		opam pin add -k version -n coq $V
+		opam install -y coq
+	;;
+	devel)
+		# we add all the repos, FIXME: they don't exist yet
+		opam repo add coq-8.4 https://github.com/coq/repo-8.4.git
+		opam repo add coq-8.5 https://github.com/coq/repo-8.5.git
+		opam repo add coq-dev https://github.com/coq/repo-trunk.git
+	;;
+	*)
+		echo "Unknown profile"
+		exit 1
+	;;
+esac
+
+echo "PROFILE=$profile" > ~/.opam-coq-shell.config
+
+echo
+echo "Setup complete."
+echo
+
+help
+
+}
+
+####
+search () {
+	shift
+	opam search coq: $@
+}
+
+####
+upgrade () {
+	echo TODO
+	exit 1
+}
+
+####
+help() {
+
+if [ $PROFILE = "devel" ]; then
+	echo "No simplified shell for a devel."
+	exit 1
+fi
+
+cat <<EOT
+Know commands are:
+  opam coq help
+    this screen
+
+  opam coq seach <keyword>
+    searches the list of known coq packages for a package maching <keyword>
+
+  opam coq upgrade <package>
+    if <package> is omitted, then it upgrades coq the the last bugfix release
+    if <package> if give, it updates such package to the last stable release
+EOT
+
+exit 1
+}
+
+################################# main ##################################
+
+# ensure opam is there and the shell installed
+if which opam >/dev/null; then
+	# good, opam installed
+	:
+else
+	cat <<-EOT
+	The opam program was not found.
+
+	To install opam follow the instructions at the following address:
+	  http://opam.ocaml.org/doc/Install.html
+
+	Alternatively, type in the following commands:
+	  curl -L '$OPAM_INSTALLER_URL' -o $OPAM_INSTALLER
+	  chmod a+x $OPAM_INSTALLER
+	  sh opam_installer.sh /usr/local/bin/
+	EOT
+	exit 1
+fi
+
+# ensure the shell is configured
+
+if [ ! -e $CONF ]; then
+	cat <<-EOT
+	Please run:
+	  opam coq setup <profile>
+
+	Available profiles:
+
+	  8.5
+	    A stable system, version 8.5, with easy install
+	    of stable packages in a simplified opam shell.
+	    Recommended profile for beginners (non OPAM experts).
+	    Possibility to upgrade the system followin bug-fix
+	    releases of Coq 8.5
+
+	  devel
+	    Full control.  This profile simply adds all official
+	    coq related package repositories (both stable and
+	    unstable ones)
+			
+	EOT
+	exit 1
+else
+	. $CONF
+fi
+
+# go
+
+if [ -z "$1" ]; then help; else $@; fi
