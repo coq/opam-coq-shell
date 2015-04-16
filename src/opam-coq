@@ -20,7 +20,7 @@ shift
 case $profile in
 	8.5)
 		# current 8.5 version, to be flipped on a release
-		# (ciryl has an idea on how to avoid hardcoding it)
+		# (cyril has an idea on how to avoid hardcoding it)
 		V=8.5beta1
 
 		# a fresh environment with a ocaml version that we know works
@@ -119,6 +119,8 @@ else
 	EOT
 	exit 1
 fi
+
+# TODO: opam init if not already
 
 if [ `opam search -i | grep coq:shell | wc -l` = 0 ]; then
 	# This is needed because we are not in the standard opam repo
