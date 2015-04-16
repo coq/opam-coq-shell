@@ -80,6 +80,7 @@ if [ $PROFILE = "devel" ]; then
 fi
 
 cat <<EOT
+
 Know commands are:
   opam coq help
     this screen
@@ -90,6 +91,7 @@ Know commands are:
   opam coq upgrade <package>
     if <package> is omitted, then it upgrades coq the the last bugfix release
     if <package> if give, it updates such package to the last stable release
+	    
 EOT
 
 exit 1
@@ -103,6 +105,7 @@ if which opam >/dev/null; then
 	:
 else
 	cat <<-EOT
+
 	The opam program was not found.
 
 	To install opam follow the instructions at the following address:
@@ -112,14 +115,24 @@ else
 	  curl -L '$OPAM_INSTALLER_URL' -o $OPAM_INSTALLER
 	  chmod a+x $OPAM_INSTALLER
 	  sh opam_installer.sh /usr/local/bin/
+
 	EOT
 	exit 1
+fi
+
+if [ `opam search -i | grep coq:shell | wc -l` = 0 ]; then
+	# This is needed because we are not in the standard opam repo
+	opam repo add coq-shell https://github.com/gares/opam-coq-shell.git
+	
+	# we install ourselves
+	opam install -y coq:shell
 fi
 
 # ensure the shell is configured
 
 if [ ! -e $CONF ]; then
 	cat <<-EOT
+	
 	Please run:
 	  opam coq setup <profile>
 
