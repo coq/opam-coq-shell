@@ -29,4 +29,5 @@ opam-coq is a dual purpose shell script
 - upgrade and install are not coded
 - test on OSX or Linux (with no Xcode/gcc installed)
 - see if something useful could be added to the devel profile
+- check opam >= 1.2
   
