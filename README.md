@@ -14,13 +14,43 @@ opam-coq is a dual purpose shell script
     2. 8.x: protected shell around a coq stable version, everything at seen is coq related and stable
     
     ```
-    opam coq help # help screen
-    opam coq init 8.4 # installs and pins the last stable version of 8.4
-    opam coq seach # only lists coq related packages, only stable packages are at seen
-    opam coq install foo # installs foo
-    opam coq upgrade # upgrades coq to the last pl of 8.4, that means only bug fixes
-    opam coq upgrade foo # upgrades foo to the latest stable version of foo
-    opam coq update # downloads the latest list of packages
+	Please run:
+	  opam coq init <profile>
+
+	Available profiles:
+
+	  8.4
+	    A stable system, version 8.4, with easy install
+	    of stable packages in a simplified opam shell.
+	    Recommended profile for beginners (non OPAM experts).
+	    Possibility to upgrade the system followin bug-fix
+	    releases of Coq 8.4
+
+	  dev
+	    Full control.  This profile simply adds all official
+	    coq related package repositories (both stable and
+	    unstable ones).
+    ```
+
+    Once `init` has been run, the `8.x` profile help screen is:
+		
+    ```
+    Supported commands are:
+      opam coq help
+        this screen
+    
+      opam coq seach <keyword>
+        searches the list of known coq packages for a package maching <keyword>
+    
+      opam coq install <package>
+        installs the given package
+    
+    	opam coq update
+    	  update the list of available packages
+    
+      opam coq upgrade <package>
+        if <package> is omitted, then it upgrades coq the the last bugfix release
+        if <package> if given, it updates such package to the last stable release
     ```
 
 # credits
