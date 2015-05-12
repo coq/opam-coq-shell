@@ -45,12 +45,12 @@ opam-coq is a dual purpose shell script
       opam coq install <package>
         installs the given package
     
-    	opam coq update
-    	  update the list of available packages
+      opam coq update
+        update the list of available packages
     
       opam coq upgrade <package>
-        if <package> is omitted, then it upgrades coq the the last bugfix release
-        if <package> if given, it updates such package to the last stable release
+        if <package> is omitted, then coq is upgraded to the last bugfix release
+        if <package> if given, then such package is upgraded to the last release
     ```
 
 # credits

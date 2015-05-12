@@ -19,54 +19,54 @@ warn() { echo "CS: Warning: $@"; }
 err() { echo "CS: Error: $@"; }
 
 write_conf() {
-local profile="$1"
-local version="$2"
-
-echo "PROFILE=$profile" > ${CONF}
-echo "VERSION=$version" >> ${CONF}
-
-. ${CONF}
+  local profile="$1"
+  local version="$2"
+  
+  echo "PROFILE=$profile" > ${CONF}
+  echo "VERSION=$version" >> ${CONF}
+  
+  . ${CONF}
 }
 
 add_stable_repo_for_profile() {
-local profile="$1"
-opam repo add coq-${profile} ${ARCHIVE}stable-${profile}
+  local profile="$1"
+  opam repo add coq-${profile} ${ARCHIVE}stable-${profile}
 }
 
 coq_version() {
-local profile="$1"
-opam show --switch=coq-shell-${profile} coq -f installed-version | \
-				cut -d ' ' -f 1
+  local profile="$1"
+  opam show --switch=coq-shell-${profile} coq -f installed-version | \
+          cut -d ' ' -f 1
 }
 
 CACHE_CLS=""
 CACHE_CLP=""
 coq_last_stable() {
-local profile="$1"
-if [ ! -z "${CACHE_CLS}" -a "${CACHE_CLP}" = "${profile}" ]; then
-  :
-else
-  CACHE_CLS="`curl -Ls ${ARCHIVE}stable-${profile}/last-stable`"
-  CACHE_CLP="${profile}"
-fi
-if [ -z "${CACHE_CLS}" ]; then
-  err "unable to fetch last coq version number"
-	exit 1
-fi
-echo ${CACHE_CLS}
+  local profile="$1"
+  if [ ! -z "${CACHE_CLS}" -a "${CACHE_CLP}" = "${profile}" ]; then
+    :
+  else
+    CACHE_CLS="`curl -Ls ${ARCHIVE}stable-${profile}/last-stable`"
+    CACHE_CLP="${profile}"
+  fi
+  if [ -z "${CACHE_CLS}" ]; then
+    err "unable to fetch last coq version number"
+    exit 1
+  fi
+  echo ${CACHE_CLS}
 }
 
 ensure_coq_namespace() {
-local pkg="$1"
-case ${pkg} in
-	coq:*)
-		:
-	;;
-	*)
-    pkg="coq:${pkg}"
-	;;
-esac
-echo ${pkg}
+  local pkg="$1"
+  case ${pkg} in
+    coq:*)
+      :
+    ;;
+    *)
+      pkg="coq:${pkg}"
+    ;;
+  esac
+  echo ${pkg}
 }
 
 
@@ -74,256 +74,252 @@ echo ${pkg}
 
 #### init ####
 init() {
-
-profile=$1
-shift
-
-if [ "${profile}" != "dev" ]; then
-  for s in `opam switch -s`; do
-  	if [ "$s" = "coq-shell-${profile}" ]; then
-  		info "you happen to have already initialized profile ${profile}"
-			info "simply switching to it"
-			info "if you want to replace it, first remove it with:"
-			info "   opam switch remove coq-shell-${profile}"
-			opam switch "coq-shell-${profile}"
-  		eval `opam config env --switch=coq-shell-${profile}`
-			V="`coq_version ${profile}`"
-			write_conf "$profile" "$V"
-			exit 0
-  	fi
-  done
-fi
-
-case ${profile} in
-	8.4)
-		V="`coq_last_stable ${profile}`"
-
-		# a fresh environment with a ocaml version that we know works
-		#opam switch coq-${profile} --alias-of 4.01.0 ${FLAGS}
-		opam switch coq-shell-${profile} --alias-of system ${FLAGS}
-		eval `opam config env --switch=coq-shell-${profile}`
-
-		# install ourselves in the switch
-		opam install -y coq:shell
-
-		# only what is tested is visible
-		add_stable_repo_for_profile "${profile}"
-
-		# we install and write the coq version in stone
-		opam install -y coq.${V} ${FLAGS}
-		opam pin add -k version -n coq ${V}
-	;;
-	dev)
-		# we add all the repos
-		opam repo add coq-released ${ARCHIVE}released
-		opam repo add coq-core-dev ${ARCHIVE}core-dev
-		opam repo add coq-extra-dev ${ARCHIVE}extra-dev
-	;;
-	*)
-		err "Unknown profile $profile"
-		exit 1
-	;;
-esac
-
-write_conf "$profile" "$V"
-
-info
-info "Setup complete."
-info
-
-help
-
+  profile=$1
+  shift
+  
+  if [ "${profile}" != "dev" ]; then
+    for s in `opam switch -s`; do
+      if [ "$s" = "coq-shell-${profile}" ]; then
+        info "you happen to have already initialized profile ${profile}"
+        info "simply switching to it"
+        info "if you want to replace it, first remove it with:"
+        info "   opam switch remove coq-shell-${profile}"
+        opam switch "coq-shell-${profile}"
+        eval `opam config env --switch=coq-shell-${profile}`
+        V="`coq_version ${profile}`"
+        write_conf "$profile" "$V"
+        exit 0
+      fi
+    done
+  fi
+  
+  case ${profile} in
+    8.4)
+      V="`coq_last_stable ${profile}`"
+  
+      # a fresh environment with a ocaml version that we know works
+      #opam switch coq-${profile} --alias-of 4.01.0 ${FLAGS}
+      opam switch coq-shell-${profile} --alias-of system ${FLAGS}
+      eval `opam config env --switch=coq-shell-${profile}`
+  
+      # install ourselves in the switch
+      opam install -y coq:shell
+  
+      # only what is tested is visible
+      add_stable_repo_for_profile "${profile}"
+  
+      # we install and write the coq version in stone
+      opam install -y coq.${V} ${FLAGS}
+      opam pin add -k version -n coq ${V}
+    ;;
+    dev)
+      # we add all the repos
+      opam repo add coq-released ${ARCHIVE}released
+      opam repo add coq-core-dev ${ARCHIVE}core-dev
+      opam repo add coq-extra-dev ${ARCHIVE}extra-dev
+    ;;
+    *)
+      err "Unknown profile $profile"
+      exit 1
+    ;;
+  esac
+  
+  write_conf "$profile" "$V"
+  
+  info
+  info "Setup complete."
+  info
+  
+  help
 }
 
 #### search ####
 search () {
-	opam search coq: $@ | grep ^coq
+  opam search coq: $@ | grep ^coq
 }
 
 #### install ####
 install () {
-local pkg="$1"
-if [ -z "${pkg}" ]; then
-  err "specify a package name"
-	exit 1
-fi
-
-# add coq: prefix if needed
-pkg="`ensure_coq_namespace ${pkg}`"
-
-if [ "`opam search -s ${pkg} | wc -l`" = "0" ]; then
-	err "package ${pkg} does not exist"
-	exit 1
-fi
-
-info "installing ${pkg}"
-opam install ${pkg}
+  local pkg="$1"
+  if [ -z "${pkg}" ]; then
+    err "specify a package name"
+    exit 1
+  fi
+  
+  # add coq: prefix if needed
+  pkg="`ensure_coq_namespace ${pkg}`"
+  
+  if [ "`opam search -s ${pkg} | wc -l`" = "0" ]; then
+    err "package ${pkg} does not exist"
+    exit 1
+  fi
+  
+  info "installing ${pkg}"
+  opam install ${pkg}
 }
 
 
 #### upgrade ####
 upgrade () {
-local pkg="$1"
-
-if [ -z "${pkg}" ]; then
-  pkg=coq
-fi
-
-if [ "${pkg}" != "coq" ]; then
-  pkg="`ensure_coq_namespace ${pkg}`"
-	opam upgrade ${pkg}
-else
-  V="`coq_last_stable ${PROFILE}`"
-	if [ "${V}" != "`coq_version ${PROFILE}`" ]; then
-    opam pin remove coq
-  	opam upgrade coq.${V}
-  	opam pin add -k version -n coq ${V}
+  local pkg="$1"
+  
+  if [ -z "${pkg}" ]; then
+    pkg=coq
+  fi
+  
+  if [ "${pkg}" != "coq" ]; then
+    pkg="`ensure_coq_namespace ${pkg}`"
+    opam upgrade ${pkg}
   else
-	  info "nothing to do, coq is already up to date"
-	fi
-fi
+    V="`coq_last_stable ${PROFILE}`"
+    if [ "${V}" != "`coq_version ${PROFILE}`" ]; then
+      opam pin remove coq
+      opam upgrade coq.${V}
+      opam pin add -k version -n coq ${V}
+    else
+      info "nothing to do, coq is already up to date"
+    fi
+  fi
 }
 
 #### update ####
 update () {
-opam update
+  opam update
 }
 
 #### help ####
 help() {
-
-if [ "${PROFILE}" = "dev" ]; then
-	err "no simplified shell for profile dev."
-	exit 1
-fi
-
-cat <<-EOT
-
-Supported commands are:
-  opam coq help
-    this screen
-
-  opam coq seach <keyword>
-    searches the list of known coq packages for a package maching <keyword>
-
-  opam coq install <package>
-    installs the given package
-
-	opam coq update
-	  update the list of available packages
-
-  opam coq upgrade <package>
-    if <package> is omitted, then it upgrades coq the the last bugfix release
-    if <package> if given, it updates such package to the last stable release
-
-Profile: $PROFILE
-Coq version: $VERSION
-
-Installed packages:
-`opam list -i | grep '^coq:'`
-
-EOT
-
-exit 1
+  if [ "${PROFILE}" = "dev" ]; then
+    err "no simplified shell for profile dev."
+    exit 1
+  fi
+  
+  cat <<-EOT
+  
+  Supported commands are:
+    opam coq help
+      this screen
+  
+    opam coq seach <keyword>
+      searches the list of known coq packages for a package maching <keyword>
+  
+    opam coq install <package>
+      installs the given package
+  
+    opam coq update
+      update the list of available packages
+  
+    opam coq upgrade <package>
+      if <package> is omitted, then coq is upgraded to the last bugfix release
+      if <package> if given, then such package is upgraded to the last release
+  
+  Profile: $PROFILE
+  Coq version: $VERSION
+  
+  Installed packages:
+  `opam list -i | grep '^coq:'`
+  
+  EOT
+  
+  exit 1
 }
 
 #### main ###################################################################
 
 # ensure opam is there and the shell installed
 if which opam >/dev/null; then
-	# good, opam installed
-	:
+  : # good, opam installed
 else
-	cat <<-EOT
+  cat <<-EOT
 
-	The opam program was not found.
+  The opam program was not found.
 
-	To install opam follow the instructions at the following address:
-	  http://opam.ocaml.org/doc/Install.html
+  To install opam follow the instructions at the following address:
+    http://opam.ocaml.org/doc/Install.html
 
-	Alternatively, type in the following commands:
-	  curl -L '$OPAM_INSTALLER_URL$OPAM_INSTALLER' -o $OPAM_INSTALLER
-	  chmod a+x $OPAM_INSTALLER
-	  sh opam_installer.sh /usr/local/bin/
+  Alternatively, type in the following commands:
+    curl -L '$OPAM_INSTALLER_URL$OPAM_INSTALLER' -o $OPAM_INSTALLER
+    chmod a+x $OPAM_INSTALLER
+    sh opam_installer.sh /usr/local/bin/
 
-	EOT
-	exit 1
+  EOT
+  exit 1
 fi
 
 if [ ! -d "${HOME}/.opam/" ]; then
-	info "opam not initialized, running opam init"
-	info "please follow the instructions"
-	opam init
+  info "opam not initialized, running opam init"
+  info "please follow the instructions"
+  opam init
 fi
 
 if [ `opam search -i | grep coq:shell | wc -l` = 0 ]; then
-	# This is needed because we are not in the standard opam repo
-	opam repo add coq-shell https://github.com/gares/opam-coq-shell.git
-	
-	# we install ourselves
-	opam install -y coq:shell
+  # This is needed because we are not in the standard opam repo
+  opam repo add coq-shell https://github.com/gares/opam-coq-shell.git
+  
+  # we install ourselves
+  opam install -y coq:shell
 fi
 
 # fast path for init
 if [ "$1" = "init" ]; then
-	$@
-	exit 0
+  $@
+  exit 0
 fi
 
 # ensure the shell is configured
 if [ ! -e ${CONF} ]; then
-	cat <<-EOT
-	
-	Please run:
-	  opam coq init <profile>
+  cat <<-EOT
+  
+  Please run:
+    opam coq init <profile>
 
-	Available profiles:
+  Available profiles:
 
-	  8.4
-	    A stable system, version 8.4, with easy install
-	    of stable packages in a simplified opam shell.
-	    Recommended profile for beginners (non OPAM experts).
-	    Possibility to upgrade the system followin bug-fix
-	    releases of Coq 8.4
+    8.4
+      A stable system, version 8.4, with easy install
+      of stable packages in a simplified opam shell.
+      Recommended profile for beginners (non OPAM experts).
+      Possibility to upgrade the system followin bug-fix
+      releases of Coq 8.4
 
-	  dev
-	    Full control.  This profile simply adds all official
-	    coq related package repositories (both stable and
-	    unstable ones).
-			
-	EOT
-	exit 1
+    dev
+      Full control.  This profile simply adds all official
+      coq related package repositories (both stable and
+      unstable ones).
+      
+  EOT
+  exit 1
 else
-	. ${CONF}
+  . ${CONF}
 fi
 
 # ensure that the repos are compatible with the profile
 if [ "${PROFILE}" != "dev" ]; then
-	P="false"
-	for r in `opam repo list -s`; do
-		case $r in
-			coq-${PROFILE})
-				P="true"
-			;;
-			default)
-				: # nothing
-			;;
-			coq-shell)
-				: # remove this as soon as the package enters default repo	
-			;;
-			*-override)
-				warn "keeping extra repository $r"
-			;;
-			*)
-				info "repository $r not part of profile $PROFILE"
-				info "removing repository: `opam repo list | grep -F $r`"
-				opam repo remove $r	
-			;;
-		esac
-	done
-	if [ "${P}" = "false" ]; then
-		add_stable_repo_for_profile "${PROFILE}"
-	fi
+  P="false"
+  for r in `opam repo list -s`; do
+    case $r in
+      coq-${PROFILE})
+        P="true"
+      ;;
+      default)
+        : # nothing
+      ;;
+      coq-shell)
+        : # TODO: remove this as soon as the package enters default repo  
+      ;;
+      *-override)
+        warn "keeping extra repository $r"
+      ;;
+      *)
+        info "repository $r not part of profile $PROFILE"
+        info "removing repository: `opam repo list | grep -F $r`"
+        opam repo remove $r  
+      ;;
+    esac
+  done
+  if [ "${P}" = "false" ]; then
+    add_stable_repo_for_profile "${PROFILE}"
+  fi
 fi
 
 # go
