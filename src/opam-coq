@@ -194,32 +194,32 @@ help() {
     exit 1
   fi
   
-  cat <<-EOT
-  
-  Supported commands are:
-    opam coq help
-      this screen
-  
-    opam coq seach <keyword>
-      searches the list of known coq packages for a package maching <keyword>
-  
-    opam coq install <package>
-      installs the given package
-  
-    opam coq update
-      update the list of available packages
-  
-    opam coq upgrade <package>
-      if <package> is omitted, then coq is upgraded to the last bugfix release
-      if <package> if given, then such package is upgraded to the last release
-  
-  Profile: $PROFILE
-  Coq version: $VERSION
-  
-  Installed packages:
-  `opam list -i | grep '^coq:'`
-  
-  EOT
+  cat <<EOT
+
+Supported commands are:
+  opam coq help
+    this screen
+
+  opam coq seach <keyword>
+    searches the list of known coq packages for a package maching <keyword>
+
+  opam coq install <package>
+    installs the given package
+
+  opam coq update
+    update the list of available packages
+
+  opam coq upgrade <package>
+    if <package> is omitted, then coq is upgraded to the last bugfix release
+    if <package> if given, then such package is upgraded to the last release
+
+Profile: $PROFILE
+Coq version: $VERSION
+
+Installed packages:
+`opam list -i | grep '^coq:'`
+
+EOT
   
   exit 1
 }
@@ -230,19 +230,19 @@ help() {
 if which opam >/dev/null; then
   : # good, opam installed
 else
-  cat <<-EOT
+  cat <<EOT
 
-  The opam program was not found.
+The opam program was not found.
 
-  To install opam follow the instructions at the following address:
-    http://opam.ocaml.org/doc/Install.html
+To install opam follow the instructions at the following address:
+  http://opam.ocaml.org/doc/Install.html
 
-  Alternatively, type in the following commands:
-    curl -L '$OPAM_INSTALLER_URL$OPAM_INSTALLER' -o $OPAM_INSTALLER
-    chmod a+x $OPAM_INSTALLER
-    sh opam_installer.sh /usr/local/bin/
+Alternatively, type in the following commands:
+  curl -L '$OPAM_INSTALLER_URL$OPAM_INSTALLER' -o $OPAM_INSTALLER
+  chmod a+x $OPAM_INSTALLER
+  sh opam_installer.sh /usr/local/bin/
 
-  EOT
+EOT
   exit 1
 fi
 
@@ -268,26 +268,26 @@ fi
 
 # ensure the shell is configured
 if [ ! -e ${CONF} ]; then
-  cat <<-EOT
-  
-  Please run:
-    opam coq init <profile>
+  cat <<EOT
 
-  Available profiles:
+Please run:
+  opam coq init <profile>
 
-    8.4
-      A stable system, version 8.4, with easy install
-      of stable packages in a simplified opam shell.
-      Recommended profile for beginners (non OPAM experts).
-      Possibility to upgrade the system followin bug-fix
-      releases of Coq 8.4
+Available profiles:
 
-    dev
-      Full control.  This profile simply adds all official
-      coq related package repositories (both stable and
-      unstable ones).
-      
-  EOT
+  8.4
+    A stable system, version 8.4, with easy install
+    of stable packages in a simplified opam shell.
+    Recommended profile for beginners (non OPAM experts).
+    Possibility to upgrade the system followin bug-fix
+    releases of Coq 8.4
+
+  dev
+    Full control.  This profile simply adds all official
+    coq related package repositories (both stable and
+    unstable ones).
+    
+EOT
   exit 1
 else
   . ${CONF}
