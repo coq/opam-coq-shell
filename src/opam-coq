@@ -9,7 +9,7 @@
 CONF=~/.opam/opam-coq.conf
 OPAM_INSTALLER_URL=https://raw.github.com/ocaml/opam/master/shell/
 OPAM_INSTALLER=opam_installer.sh
-ARCHIVE=http://ssr.msr-inria.inria.fr/~gares/coq-opam-archive/
+ARCHIVE=http://coq.inria.fr/opam/
 FLAGS=-j2
 
 #### utils ###################################################################
@@ -98,8 +98,7 @@ init() {
       V="`coq_last_stable ${profile}`"
   
       # a fresh environment with a ocaml version that we know works
-      #opam switch coq-${profile} --alias-of 4.01.0 ${FLAGS}
-      opam switch coq-shell-${profile} --alias-of system ${FLAGS}
+      opam switch coq-shell-${profile} --alias-of 4.01.0 ${FLAGS}
       eval `opam config env --switch=coq-shell-${profile}`
   
       # install ourselves in the switch
@@ -253,9 +252,6 @@ if [ ! -d "${HOME}/.opam/" ]; then
 fi
 
 if [ `opam search -i | grep coq:shell | wc -l` = 0 ]; then
-  # This is needed because we are not in the standard opam repo
-  opam repo add coq-shell https://github.com/gares/opam-coq-shell.git
-  
   # we install ourselves
   opam install -y coq:shell
 fi
