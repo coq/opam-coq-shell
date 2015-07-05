@@ -6,7 +6,7 @@
 #set -x
 #set -e
 
-CONF=~/.opam/opam-coq.conf
+CONF="${OPAMROOT}/opam-coq.conf"
 OPAM_INSTALLER_URL=https://raw.github.com/ocaml/opam/master/shell/
 OPAM_INSTALLER=opam_installer.sh
 ARCHIVE=http://coq.inria.fr/opam/
@@ -245,7 +245,7 @@ EOT
   exit 1
 fi
 
-if [ ! -d "${HOME}/.opam/" ]; then
+if [ ! -d "${OPAMROOT}" ]; then
   info "opam not initialized, running opam init"
   info "please follow the instructions"
   opam init
